@@ -31,6 +31,8 @@ class CoolStepper extends StatefulWidget {
   /// default is false
   final bool showErrorSnackbar;
 
+  final Function(int, bool) answerDetails;
+
   const CoolStepper({
     Key? key,
     required this.steps,
@@ -38,6 +40,7 @@ class CoolStepper extends StatefulWidget {
     this.contentPadding = const EdgeInsets.symmetric(horizontal: 20.0),
     this.config = const CoolStepperConfig(),
     this.showErrorSnackbar = false,
+    required this.answerDetails,
   }) : super(key: key);
 
   @override
@@ -77,6 +80,7 @@ class _CoolStepperState extends State<CoolStepper> {
 
     /// [validation] is null, no validation rule
     if (validation == null) {
+      widget.answerDetails(currentStep, false);
       if (!_isLast(currentStep)) {
         setState(() {
           currentStep++;
@@ -111,12 +115,37 @@ class _CoolStepperState extends State<CoolStepper> {
   }
 
   void onStepBack() {
-    if (!_isFirst(currentStep)) {
+    widget.answerDetails(currentStep, true);
+    if (!_isLast(currentStep)) {
       setState(() {
-        currentStep--;
+        currentStep++;
       });
+      FocusScope.of(context).unfocus();
       switchToPage(currentStep);
+    } else {
+      widget.onCompleted();
     }
+
+    // if (!_isFirst(currentStep)) {
+    //   setState(() {
+    //     currentStep--;
+    //   });
+    //   switchToPage(currentStep);
+    // }
+    // final flush = Flushbar(
+    //   message: 'Invalid Answer.',
+    //   flushbarStyle: FlushbarStyle.FLOATING,
+    //   margin: EdgeInsets.all(8.0),
+    //   borderRadius: BorderRadius.all(Radius.circular(8.0)),
+    //   icon: Icon(
+    //     Icons.info_outline,
+    //     size: 28.0,
+    //     color: Theme.of(context).primaryColor,
+    //   ),
+    //   duration: Duration(seconds: 2),
+    //   leftBarIndicatorColor: Theme.of(context).primaryColor,
+    // );
+    // flush.show(context);
   }
 
   @override
@@ -140,6 +169,7 @@ class _CoolStepperState extends State<CoolStepper> {
         "${widget.config.stepText ?? 'STEP'} ${currentStep + 1} ${widget.config.ofText ?? 'OF'} ${widget.steps.length}",
         style: TextStyle(
           fontWeight: FontWeight.bold,
+          color: Colors.white,
         ),
       ),
     );
@@ -147,7 +177,7 @@ class _CoolStepperState extends State<CoolStepper> {
     String getNextLabel() {
       String nextLabel;
       if (_isLast(currentStep)) {
-        nextLabel = widget.config.finalText ?? 'FINISH';
+        nextLabel = widget.config.finalText ?? 'NO';
       } else {
         if (widget.config.nextTextList != null) {
           nextLabel = widget.config.nextTextList![currentStep];
@@ -159,17 +189,7 @@ class _CoolStepperState extends State<CoolStepper> {
     }
 
     String getPrevLabel() {
-      String backLabel;
-      if (_isFirst(currentStep)) {
-        backLabel = '';
-      } else {
-        if (widget.config.backTextList != null) {
-          backLabel = widget.config.backTextList![currentStep - 1];
-        } else {
-          backLabel = widget.config.backText ?? 'PREV';
-        }
-      }
-      return backLabel;
+      return widget.config.backText ?? 'PREV';
     }
 
     final buttons = Container(
@@ -180,7 +200,10 @@ class _CoolStepperState extends State<CoolStepper> {
             onPressed: onStepBack,
             child: Text(
               getPrevLabel(),
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           counter,
@@ -189,7 +212,8 @@ class _CoolStepperState extends State<CoolStepper> {
             child: Text(
               getNextLabel(),
               style: TextStyle(
-                color: Colors.green,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),

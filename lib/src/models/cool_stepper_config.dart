@@ -67,7 +67,7 @@ class CoolStepperConfig {
     this.subtitleTextStyle,
     this.backTextList,
     this.nextTextList,
-    this.finalText = 'FINISH',
+    this.finalText = 'NO',
     this.isHeaderEnabled = true,
   });
 }
